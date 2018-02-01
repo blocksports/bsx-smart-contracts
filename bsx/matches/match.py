@@ -9,7 +9,7 @@ class Match():
 
     match_prefix = b'match/'
 
-    time_buffer = 30
+    time_buffer = 300
 
     storage = StorageAPI()
 
@@ -84,14 +84,14 @@ def CreateMatchID(details):
     numOutcomes = details[5]
     canDraw = details[6]
 
-    output = concat(name, sport)
-    output = concat(output, comp)
-    output = concat(output, participants)
-    output = concat(output, start)
-    output = concat(output, numOutcomes)
-    output = concat(output, canDraw)
+    rawMatchID = concat(name, sport)
+    rawMatchID = concat(rawMatchID, comp)
+    rawMatchID = concat(rawMatchID, participants)
+    rawMatchID = concat(rawMatchID, start)
+    rawMatchID = concat(rawMatchID, numOutcomes)
+    rawMatchID = concat(rawMatchID, canDraw)
 
-    matchID = sha1(output)
+    matchID = sha1(rawMatchID)
     
     return matchID  
 
