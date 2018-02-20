@@ -202,8 +202,8 @@ class Exchange():
         matchOutcome = InvokeMatchContract("checkMatchOutcome", invokeArgs, 0)
         if matchOutcome == False:
             return False
-
-        elif matchOutcome != bet.outcome and matchOutcome != "void":    # split up to help with failure logging 
+        
+        elif (bet.betType == "back" and matchOutcome != bet.outcome) and (bet.betType == "lay" and matchOutcome == bet.outcome) and matchOutcome != "void": 
             msg = concat("Incorrect bet outcome, winning outcome was: ", matchOutcome)
             Log(msg)
             return False

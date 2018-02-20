@@ -78,14 +78,14 @@ def CreateMatchID(details):
     # Saves a few hundred ops doing this manually
     name = details[0]
     sport = details[1]
-    comp = details[2]
+    competition = details[2]
     participants = details[3]
     start = details[4]
     numOutcomes = details[5]
     canDraw = details[6]
 
     rawMatchID = concat(name, sport)
-    rawMatchID = concat(rawMatchID, comp)
+    rawMatchID = concat(rawMatchID, competition)
     rawMatchID = concat(rawMatchID, participants)
     rawMatchID = concat(rawMatchID, start)
     rawMatchID = concat(rawMatchID, numOutcomes)
