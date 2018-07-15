@@ -21,12 +21,12 @@ class Queue():
     exitLoop = 0
 
     def CreateQueueIDs(self, args):
-        matchID = args[0]
+        eventID = args[0]
         outcome = args[1]
         odds = args[2]
         betType = args[3]
 
-        rawQueue = concat(matchID, outcome)
+        rawQueue = concat(eventID, outcome)
         rawQueue = concat(rawQueue, odds)
 
         rawBackID = concat(rawQueue, "back")

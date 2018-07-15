@@ -1,19 +1,19 @@
 from boa.blockchain.vm.Neo.Action import RegisterAction
 from boa.code.builtins import concat, sha1 
-from bsx.matches.match import CreateMatchID, StoreMatchDetails
+from bsx.events.event import CreateEventID, StoreEventDetails
 from bsx.common.utils import ValidateArgsLength
 from nex.common.storage import StorageAPI
 
-OnNewMatchAdded = RegisterAction("new_match_added", "match_id", "oracle_id", "match_details")
-OnNewMatchConsensus = RegisterAction("new_match_consensus", "match_id", "oracle_id")
-OnNewMatchConfirmed = RegisterAction("new_match_confirmed", "match_id", "oracle_id")
+OnNewEventAdded = RegisterAction("new_event_added", "event_id", "oracle_id", "event_details")
+OnNewEventConsensus = RegisterAction("new_event_consensus", "event_id", "oracle_id")
+OnNewEventConfirmed = RegisterAction("new_event_confirmed", "event_id", "oracle_id")
 
-OnMatchOutcomeConsensus = RegisterAction("update_match_consensus", "match_id", "outcome", "oracle_id")
-OnMatchOutcomeConfirmed = RegisterAction("update_match_confirmed", "match_id", "outcome", "oracle_id")
+OnEventOutcomeConsensus = RegisterAction("update_event_consensus", "event_id", "outcome", "oracle_id")
+OnEventOutcomeConfirmed = RegisterAction("update_event_confirmed", "event_id", "outcome", "oracle_id")
 
 class Oracle():
 
-    match_prefix = b'match/'
+    event_prefix = b'event/'
     oracle_prefix = b'oracle/'
 
     outcome_oracle_prefix = b'outcome_oracle/'
@@ -22,7 +22,7 @@ class Oracle():
     oracle_count_key = b'oracle/count'
     oracle_consensus_key = b'oracle/consensus'
 
-    def AddMatch(self, args, oracleID):
+    def AddEvent(self, args, oracleID):
         storage = StorageAPI()
 
         isValidSender = self.ValidateOracle(storage, oracleID)
@@ -33,43 +33,43 @@ class Oracle():
         if isValidLength == False:
             return False
 
-        matchID = CreateMatchID(args)
+        eventID = CreateEventID(args)
 
-        matchKey = concat(self.match_prefix, matchID)
-        match = storage.get(matchKey)
+        eventKey = concat(self.event_prefix, eventID)
+        event = storage.get(eventKey)
 
-        if match == False:
-            _ = StoreMatchDetails(storage, matchKey, args)
+        if event == False:
+            _ = StoreEventDetails(storage, eventKey, args)
 
-            match = "pending"
+            event = "pending"
 
-            OnNewMatchAdded(matchID, oracleID, args)
+            OnNewEventAdded(eventID, oracleID, args)
             
-        if match == "pending":
-            oracleKey = concat(matchKey, oracleID) 
-            countKey = concat(matchKey, "/count")
+        if event == "pending":
+            oracleKey = concat(eventKey, oracleID) 
+            countKey = concat(eventKey, "/count")
 
-            reachedConsensus = self.CheckMatchConsensus(storage, oracleKey, countKey)
+            reachedConsensus = self.CheckEventConsensus(storage, oracleKey, countKey)
 
             if reachedConsensus == False:
-                OnNewMatchConsensus(matchID, oracleID)
+                OnNewEventConsensus(eventID, oracleID)
             
             else: 
-                storage.put(matchKey, "active")
+                storage.put(eventKey, "active")
 
-                OnNewMatchConfirmed(matchID, oracleID)
+                OnNewEventConfirmed(eventID, oracleID)
                 
             return  True
         else:
-            msg1 = concat("Consensus has finished for: ", matchID)
-            msg2 = concat(", Match state is currently: ", match)
+            msg1 = concat("Consensus has finished for: ", eventID)
+            msg2 = concat(", Event state is currently: ", event)
             msg = concat(msg1, msg2)
 
             Log(msg)
 
         return False
 
-    def UpdateMatchOutcome(self, args, oracleID):
+    def UpdateEventOutcome(self, args, oracleID):
         storage = StorageAPI()
 
         isValidSender = self.ValidateOracle(storage, oracleID)
@@ -80,15 +80,15 @@ class Oracle():
         if isValidLength == False:
             return False    
 
-        matchID = args[0]
+        eventID = args[0]
         outcome = args[1]
 
-        matchKey = concat(self.match_prefix, matchID)
-        match = storage.get(matchKey)    
+        eventKey = concat(self.event_prefix, eventID)
+        event = storage.get(eventKey)    
 
-        if match != "active":
-            msg1 = concat("Cannot update match: ", matchID)
-            msg2 = concat(", Match state is currently: ", match)
+        if event != "active":
+            msg1 = concat("Cannot update event: ", eventID)
+            msg2 = concat(", Event state is currently: ", event)
             msg = concat(msg1, msg2)
 
             Log(msg)
@@ -98,26 +98,26 @@ class Oracle():
         oracleSuffix = concat(self.outcome_oracle_prefix, oracleID)
         countSuffix = concat(self.outcome_count_prefix, outcome)
 
-        oracleKey = concat(matchKey, oracleSuffix)   
-        countKey = concat(matchKey, countSuffix)
+        oracleKey = concat(eventKey, oracleSuffix)   
+        countKey = concat(eventKey, countSuffix)
 
-        reachedConsensus = self.CheckMatchConsensus(storage, oracleKey, countKey)
+        reachedConsensus = self.CheckEventConsensus(storage, oracleKey, countKey)
 
         if reachedConsensus == False:
-                OnMatchOutcomeConsensus(matchID, oracleID)
+                OnEventOutcomeConsensus(eventID, oracleID)
             
         else: 
             if outcome == "void":
-                storage.put(matchKey, "void")
+                storage.put(eventKey, "void")
 
             else: 
-                outcomeKey = concat(matchKey, "/outcome")
+                outcomeKey = concat(eventKey, "/outcome")
 
                 storage.put(outcomeKey, outcome)
-                storage.put(matchKey, "finished")
+                storage.put(eventKey, "finished")
 
 
-            OnMatchOutcomeConfirmed(matchID, outcome, oracleID)
+            OnEventOutcomeConfirmed(eventID, outcome, oracleID)
 
         return True
 
@@ -130,7 +130,7 @@ class Oracle():
 
         return True
 
-    def CheckMatchConsensus(self, storage:StorageAPI, oracleKey, countKey):
+    def CheckEventConsensus(self, storage:StorageAPI, oracleKey, countKey):
         oracleStatus = storage.get(oracleKey)
         if oracleStatus == "participated":
             Log("Oracle has already participated")

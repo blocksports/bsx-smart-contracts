@@ -9,7 +9,7 @@ from bsx.betting.queue import Queue, InitialiseQueue
 from bsx.common.utils import ValidateArgsLength, GetCurrentTimestamp
 from nex.common.storage import StorageAPI
 
-InvokeMatchContract = RegisterAppCall("d21bee8a53177becfbf417cef93ec1e5aee1033a", "operation", "args", "sender")
+InvokeEventContract = RegisterAppCall("d21bee8a53177becfbf417cef93ec1e5aee1033a", "operation", "args", "sender")
 
 OnBetAdded = RegisterAction("bet_added", "bet_id", "user_id", "bet_details", "bet_index")
 
@@ -122,7 +122,7 @@ class Exchange():
         storage.put(bet.statusKey, "claimed")
 
         if outcome == "void":
-            """ Reimburse original bet if the match was voided """
+            """ Reimburse original bet if the event was voided """
 
             _ = user.AddToBalance(storage, bet.betAmount)
 
@@ -142,7 +142,7 @@ class Exchange():
         return True  
 
     def ValidateNewBet(self, user:User, args):
-        matchID = args[0]
+        eventID = args[0]
         odds = args[2]
         betType = args[3]
         betAmount = args[4]
@@ -167,11 +167,11 @@ class Exchange():
             Log(msg)
             return False
         
-        invokeArgs = [ matchID ]
+        invokeArgs = [ eventID ]
 
-        isValidMatch = InvokeMatchContract("validateActiveMatch", invokeArgs, 0)
+        isValidEvent = InvokeEventContract("validateActiveEvent", invokeArgs, 0)
         
-        return isValidMatch
+        return isValidEvent
     
     def ValidateCancelBet(self, bet:Bet, sender):
         if bet.status != "valid":
@@ -197,15 +197,15 @@ class Exchange():
             Log(msg)
             return False  
 
-        invokeArgs = [ bet.matchID ]
+        invokeArgs = [ bet.eventID ]
 
-        matchOutcome = InvokeMatchContract("checkMatchOutcome", invokeArgs, 0)
-        if matchOutcome == False:
+        eventOutcome = InvokeEventContract("checkEventOutcome", invokeArgs, 0)
+        if eventOutcome == False:
             return False
         
-        elif (bet.betType == "back" and matchOutcome != bet.outcome) and (bet.betType == "lay" and matchOutcome == bet.outcome) and matchOutcome != "void": 
-            msg = concat("Incorrect bet outcome, winning outcome was: ", matchOutcome)
+        elif (bet.betType == "back" and eventOutcome != bet.outcome) and (bet.betType == "lay" and eventOutcome == bet.outcome) and eventOutcome != "void": 
+            msg = concat("Incorrect bet outcome, winning outcome was: ", eventOutcome)
             Log(msg)
             return False
 
-        return matchOutcome
+        return eventOutcome

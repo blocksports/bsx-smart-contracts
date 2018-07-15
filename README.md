@@ -1,3 +1,3 @@
 # Block Sports Smart Contracts
 
-Early working versions of our match storage and betting contracts
+Early working versions of our event storage and betting contracts

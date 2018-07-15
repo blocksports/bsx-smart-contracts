@@ -6,7 +6,7 @@ class Bet():
 
     betID = 0
 
-    matchID = 0
+    eventID = 0
     outcome = 0
     odds = 0
     betType = 0
@@ -31,7 +31,7 @@ class Bet():
     oddsFactor = 100
 
     def CreateBetID(self):
-        rawBetID = concat(self.matchID, self.outcome)
+        rawBetID = concat(self.eventID, self.outcome)
         rawBetID = concat(rawBetID, self.odds)
         rawBetID = concat(rawBetID, self.betType)
         rawBetID = concat(rawBetID, self.betIndex)  
@@ -41,7 +41,7 @@ class Bet():
         return self    
 
     def CreateNewBetID(self, storage:StorageAPI):
-        rawQueueID = concat(self.matchID, self.outcome)
+        rawQueueID = concat(self.eventID, self.outcome)
         rawQueueID = concat(rawQueueID, self.odds)    
         rawQueueID = concat(rawQueueID, self.betType)
 
@@ -83,7 +83,7 @@ class Bet():
 def InitialiseBet(storage:StorageAPI, args) -> Bet:
     bet = Bet()
 
-    bet.matchID = args[0]
+    bet.eventID = args[0]
     bet.outcome = args[1]
     bet.odds = args[2]
     bet.betType = args[3]
@@ -106,7 +106,7 @@ def InitialiseBet(storage:StorageAPI, args) -> Bet:
 def InitialiseNewBet(storage:StorageAPI, args) -> Bet:
     bet = Bet()
 
-    bet.matchID = args[0]
+    bet.eventID = args[0]
     bet.outcome = args[1]
     bet.odds = args[2]
     bet.betType = args[3]
